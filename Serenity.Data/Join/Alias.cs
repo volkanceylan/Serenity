@@ -25,7 +25,7 @@ namespace Serenity.Data
         /// Static t3 alias
         /// </summary>
         public static readonly Alias T3 = new Alias(3);
-        
+
         /// <summary>
         /// Static t4 alias
         /// </summary>
@@ -59,29 +59,34 @@ namespace Serenity.Data
         private string alias;
         private string aliasDot;
         private string table;
+        private string tableHint;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Alias"/> class.
         /// </summary>
         /// <param name="alias">The alias.</param>
-        public Alias(int alias)
+        /// <param name="hint">The table hint.</param>
+        public Alias(int alias, string hint = null)
         {
             this.alias = alias.TableAlias();
             this.aliasDot = alias.TableAliasDot();
+            this.tableHint = hint;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Alias"/> class.
         /// </summary>
         /// <param name="alias">The alias.</param>
+        /// <param name="hint">The table hint.</param>
         /// <exception cref="System.ArgumentNullException">alias</exception>
-        public Alias(string alias)
+        public Alias(string alias, string hint = null)
         {
             if (String.IsNullOrEmpty(alias))
-                throw new ArgumentNullException("alias");
+                throw new ArgumentNullException(nameof(alias));
 
             this.alias = alias;
             this.aliasDot = alias + ".";
+            this.tableHint = hint;
         }
 
         /// <summary>
@@ -89,8 +94,8 @@ namespace Serenity.Data
         /// </summary>
         /// <param name="table">The table.</param>
         /// <param name="alias">The alias.</param>
-        public Alias(string table, int alias)
-            : this(alias)
+        /// <param name="hint">The table hint.</param>
+        public Alias(string table, int alias, string hint = null) : this(alias, hint)
         {
             this.table = table;
         }
@@ -100,8 +105,8 @@ namespace Serenity.Data
         /// </summary>
         /// <param name="table">The table.</param>
         /// <param name="alias">The alias.</param>
-        public Alias(string table, string alias)
-            : this(alias)
+        /// <param name="hint">The table hint.</param>
+        public Alias(string table, string alias, string hint = null) : this(alias, hint)
         {
             this.table = table;
         }
@@ -140,6 +145,17 @@ namespace Serenity.Data
         }
 
         /// <summary>
+        /// Gets the table hint.
+        /// </summary>
+        /// <value>
+        /// The table hint.
+        /// </value>
+        public string TableHint
+        {
+            get { return tableHint; }
+        }
+
+        /// <summary>
         /// Gets the prefixed expression with the specified field name.
         /// </summary>
         /// <value>
@@ -166,9 +182,9 @@ namespace Serenity.Data
             get
             {
                 if (field == null)
-                    throw new ArgumentNullException("field");
+                    throw new ArgumentNullException(nameof(field));
 
-                return this.aliasDot + field.Name; 
+                return this.aliasDot + field.Name;
             }
         }
 
@@ -221,7 +237,7 @@ namespace Serenity.Data
         public static string operator +(Alias alias, IField field)
         {
             if (field == null)
-                throw new ArgumentNullException("field");
+                throw new ArgumentNullException(nameof(field));
 
             return alias.aliasDot + field.Name;
         }

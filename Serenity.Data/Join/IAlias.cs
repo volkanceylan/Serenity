@@ -12,7 +12,7 @@ namespace Serenity.Data
         /// The name.
         /// </value>
         string Name { get; }
-        
+
         /// <summary>
         /// Gets the name plus dot.
         /// </summary>
@@ -28,5 +28,13 @@ namespace Serenity.Data
         /// The table.
         /// </value>
         string Table { get; }
+
+        /// <summary>
+        /// Gets the table hint.
+        /// </summary>
+        /// <value>
+        /// The table hint.
+        /// </value>
+        string TableHint { get; }
     }
 }

@@ -104,6 +104,12 @@
             from.Append(' ');
             from.Append(alias.Name);
 
+            if (!string.IsNullOrEmpty(alias.TableHint))
+            {
+                from.Append(' ');
+                from.Append(alias.TableHint);
+            }
+
             AliasExpressions.Add(alias.Name, table + " " + alias.Name);
 
             var haveJoins = alias as IHaveJoins;
@@ -645,7 +651,7 @@
         int ISqlQueryExtensible.GetSelectIntoIndex(IField field)
         {
             return this.columns.FindIndex(
-                delegate(Column s) { return s.IntoField == field; });
+                delegate (Column s) { return s.IntoField == field; });
         }
 
         void ISqlQueryExtensible.IntoRowSelection(object row)

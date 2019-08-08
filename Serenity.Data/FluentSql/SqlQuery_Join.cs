@@ -18,6 +18,13 @@
                 sb.Append(join.Name);
             }
 
+            // join table hint: add if specified
+            if (!string.IsNullOrEmpty(join.TableHint))
+            {
+                sb.Append(' ');
+                sb.Append(join.TableHint);
+            }
+
             if (!ReferenceEquals(null, join.OnCriteria) &&
                 !join.OnCriteria.IsEmpty)
             {
