@@ -65,27 +65,54 @@ namespace Serenity.Data
         /// Initializes a new instance of the <see cref="Alias"/> class.
         /// </summary>
         /// <param name="alias">The alias.</param>
-        /// <param name="hint">The table hint.</param>
-        public Alias(int alias, string hint = null)
+        public Alias(int alias)
         {
             this.alias = alias.TableAlias();
             this.aliasDot = alias.TableAliasDot();
-            this.tableHint = hint;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Alias"/> class.
         /// </summary>
         /// <param name="alias">The alias.</param>
-        /// <param name="hint">The table hint.</param>
         /// <exception cref="System.ArgumentNullException">alias</exception>
-        public Alias(string alias, string hint = null)
+        public Alias(string alias)
         {
             if (String.IsNullOrEmpty(alias))
                 throw new ArgumentNullException(nameof(alias));
 
             this.alias = alias;
             this.aliasDot = alias + ".";
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Alias"/> class.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <param name="alias">The alias.</param>
+        public Alias(string table, int alias) : this(alias)
+        {
+            this.table = table;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Alias"/> class.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <param name="alias">The alias.</param>
+        public Alias(string table, string alias) : this(alias)
+        {
+            this.table = table;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Alias"/> class.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <param name="alias">The alias.</param>
+        /// <param name="hint">The table hint.</param>
+        public Alias(string table, int alias, string hint) : this(table, alias)
+        {
             this.tableHint = hint;
         }
 
@@ -95,20 +122,9 @@ namespace Serenity.Data
         /// <param name="table">The table.</param>
         /// <param name="alias">The alias.</param>
         /// <param name="hint">The table hint.</param>
-        public Alias(string table, int alias, string hint = null) : this(alias, hint)
+        public Alias(string table, string alias, string hint) : this(table, alias)
         {
-            this.table = table;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Alias"/> class.
-        /// </summary>
-        /// <param name="table">The table.</param>
-        /// <param name="alias">The alias.</param>
-        /// <param name="hint">The table hint.</param>
-        public Alias(string table, string alias, string hint = null) : this(alias, hint)
-        {
-            this.table = table;
+            this.tableHint = hint;
         }
 
         /// <summary>

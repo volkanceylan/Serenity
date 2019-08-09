@@ -187,10 +187,10 @@ namespace Serenity.Data
 
         private void DetermineTableHint()
         {
-            if (!(SqlConnections.TryGetConnectionString(connectionKey).Dialect is SqlServer2000Dialect))
-                throw new InvalidProgramException(String.Format("Row type {0} has a [TableHint] attribute but its SQL dialect (ConnectionKey) isn't SQL Server!", rowType.Name));
-
             this.tableHint = this.rowType.GetCustomAttribute<TableHintAttribute>()?.Hint;
+
+            if (!string.IsNullOrEmpty(tableHint) && !(SqlConnections.TryGetConnectionString(connectionKey)?.Dialect is SqlServer2000Dialect))
+                throw new InvalidProgramException(String.Format("Row type {0} has a [TableHint] attribute but its SQL dialect (ConnectionKey) isn't SQL Server!", rowType.Name));
         }
 
         private string DetermineForeignTableHint(string foreignTableName)
