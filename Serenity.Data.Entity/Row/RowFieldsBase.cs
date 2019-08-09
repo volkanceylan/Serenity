@@ -57,7 +57,7 @@ namespace Serenity.Data
             DetermineConnectionKey();
             DetermineModuleIdentifier();
             DetermineLocalTextPrefix();
-            DetermineQueryHint();
+            DetermineTableHint();
         }
 
         private void DetermineRowType()
@@ -185,8 +185,11 @@ namespace Serenity.Data
             this.localTextPrefix = this.RowIdentifier;
         }
 
-        private void DetermineQueryHint()
+        private void DetermineTableHint()
         {
+            if (!(SqlConnections.TryGetConnectionString(connectionKey).Dialect is SqlServer2000Dialect))
+                throw new InvalidProgramException(String.Format("Row type {0} has a [TableHint] attribute but its SQL dialect (ConnectionKey) isn't SQL Server!", rowType.Name));
+
             this.tableHint = this.rowType.GetCustomAttribute<TableHintAttribute>()?.Hint;
         }
 
