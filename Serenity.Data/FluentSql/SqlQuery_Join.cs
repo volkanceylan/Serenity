@@ -21,8 +21,7 @@
             // join table hint: add if specified
             if (!string.IsNullOrEmpty(join.TableHint))
             {
-                sb.Append(' ');
-                sb.Append(join.TableHint);
+                sb.Append($" {SqlKeywords.With} ({join.TableHint})");
             }
 
             if (!ReferenceEquals(null, join.OnCriteria) &&
@@ -31,7 +30,7 @@
                 sb.Append(" ON ");
                 if (!(join.OnCriteria is BinaryCriteria))
                     sb.Append('(');
-                
+
                 if (modifySelf)
                     sb.Append(join.OnCriteria.ToString(this));
                 else

@@ -104,10 +104,10 @@
             from.Append(' ');
             from.Append(alias.Name);
 
+            // table hint: add if specified
             if (!string.IsNullOrEmpty(alias.TableHint))
             {
-                from.Append(' ');
-                from.Append(alias.TableHint);
+                from.Append($" {SqlKeywords.With} ({alias.TableHint})");
             }
 
             AliasExpressions.Add(alias.Name, table + " " + alias.Name);
