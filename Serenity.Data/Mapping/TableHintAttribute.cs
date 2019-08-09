@@ -6,6 +6,7 @@ namespace Serenity.Data.Mapping
     /// Determines query hint for the row.
     /// </summary>
     /// <seealso cref="System.Attribute" />
+    [AttributeUsage(AttributeTargets.Class)]
     public class TableHintAttribute : Attribute
     {
         /// <summary>
