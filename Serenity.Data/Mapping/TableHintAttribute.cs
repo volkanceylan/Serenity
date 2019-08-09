@@ -3,7 +3,7 @@
 namespace Serenity.Data.Mapping
 {
     /// <summary>
-    /// Determines query hint for the row.
+    /// Determines table hint for the row.
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage(AttributeTargets.Class)]
