@@ -1060,7 +1060,7 @@
                 buttons: this.getToolButtons()
             });
 
-            var progress = $('<div><div></div></div>')
+            this.progress = $('<div><div></div></div>')
                 .addClass('upload-progress')
                 .prependTo(this.toolbar.element);
 
