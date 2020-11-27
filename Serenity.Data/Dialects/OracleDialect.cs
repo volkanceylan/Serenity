@@ -48,6 +48,20 @@ namespace Serenity.Data
         }
 
         /// <summary>
+        /// Gets the preference of using offset fetch instead of RowNum 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if use offset fetch; otherwise rownum, <c>false</c>.
+        /// </value>
+        public virtual bool PreferOffsetFetchOverRownum
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the server supports ROWNUMBER.
         /// </summary>
         /// <value>
@@ -374,7 +388,7 @@ namespace Serenity.Data
                 case SqlUnionType.Intersect:
                     return "INTERSECT";
                 case SqlUnionType.Except:
-                    return "EXCEPT";
+                    return "MINUS"; //Oracle Equivalent of Except
                 default:
                     throw new NotImplementedException();
             }

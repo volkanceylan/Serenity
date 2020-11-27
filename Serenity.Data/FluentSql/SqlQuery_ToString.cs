@@ -26,7 +26,7 @@ namespace Serenity.Data
             if (this.parent != null)
                 sb.Append("(");
 
-            if (skip > 0 && orderBy == null && !dialect.CanUseSkipKeyword && !dialect.UseRowNum)
+            if (skip > 0 && orderBy == null && !dialect.CanUseSkipKeyword && !dialect.CanUseOffsetFetch && !dialect.UseRowNum)
                 throw new InvalidOperationException("A query must be ordered by unique fields " +
                     "to be able to skip records!");
 
@@ -35,7 +35,10 @@ namespace Serenity.Data
 
             bool useSkipKeyword = skip > 0 && dialect.CanUseSkipKeyword;
             bool useOffset = skip > 0 && !useSkipKeyword && dialect.CanUseOffsetFetch;
-            bool useRowNum = (skip > 0 || take > 0) && dialect.UseRowNum;
+            if (dialect.PreferOffsetFetchOverRownum) {
+                useOffset = (skip > 0 || take > 0) && !useSkipKeyword && dialect.CanUseOffsetFetch;
+            }
+            bool useRowNum = (skip > 0 || take > 0) && !useOffset && dialect.UseRowNum;
             bool useRowNumber = skip > 0 && !useSkipKeyword && !useOffset && !useRowNum && dialect.CanUseRowNumber;
             bool useSecondQuery = skip > 0 && !useSkipKeyword && !useOffset && !useRowNumber;
 
