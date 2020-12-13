@@ -13,5 +13,6 @@
         public const string Desc = " DESC";
         public const string As = " AS ";
         public const string Null = "NULL";
+        public const string With = "WITH";
     }
 }

@@ -24,9 +24,10 @@ namespace Serenity.Data
         /// <param name="toTable">To table.</param>
         /// <param name="alias">The alias.</param>
         /// <param name="onCriteria">The ON criteria.</param>
+        /// <param name="hint">The table hint.</param>
         /// <exception cref="System.ArgumentException"></exception>
-        protected Join(IDictionary<string, Join> joins, string toTable, string alias, ICriteria onCriteria)
-            : base(toTable, alias)
+        protected Join(IDictionary<string, Join> joins, string toTable, string alias, ICriteria onCriteria, string hint = null)
+            : base(toTable, alias, hint)
         {
             this.joins = joins;
             this.onCriteria = onCriteria;

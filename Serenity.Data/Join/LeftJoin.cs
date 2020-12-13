@@ -14,8 +14,9 @@ namespace Serenity.Data
         /// <param name="toTable">To table.</param>
         /// <param name="alias">The alias.</param>
         /// <param name="onCriteria">The ON criteria.</param>
-        public LeftJoin(string toTable, string alias, ICriteria onCriteria)
-            : base(null, toTable, alias, onCriteria)
+        /// <param name="hint">The table hint.</param>
+        public LeftJoin(string toTable, string alias, ICriteria onCriteria, string hint = null)
+            : base(null, toTable, alias, onCriteria, hint)
         {
         }
 
@@ -26,8 +27,9 @@ namespace Serenity.Data
         /// <param name="toTable">To table.</param>
         /// <param name="alias">The alias.</param>
         /// <param name="onCriteria">The ON criteria.</param>
-        public LeftJoin(IDictionary<string, Join> joins, string toTable, string alias, ICriteria onCriteria)
-            : base(joins, toTable, alias, onCriteria)
+        /// <param name="hint">The table hint.</param>
+        public LeftJoin(IDictionary<string, Join> joins, string toTable, string alias, ICriteria onCriteria, string hint = null)
+            : base(joins, toTable, alias, onCriteria, hint)
         {
         }
 
@@ -39,5 +41,5 @@ namespace Serenity.Data
         {
             return "LEFT JOIN";
         }
-     }
+    }
 }

@@ -38,6 +38,7 @@ namespace Serenity.Data
         internal string tableName;
         internal string alias;
         internal string aliasDot;
+        internal string tableHint;
 
         protected RowFieldsBase(string tableName = null, string fieldPrefix = "")
         {
@@ -56,6 +57,7 @@ namespace Serenity.Data
             DetermineConnectionKey();
             DetermineModuleIdentifier();
             DetermineLocalTextPrefix();
+            DetermineTableHint();
         }
 
         private void DetermineRowType()
@@ -68,7 +70,7 @@ namespace Serenity.Data
             this.rowType = fieldsType.DeclaringType;
             if (!this.rowType.IsSubclassOf(typeof(Row)))
                 throw new InvalidProgramException(String.Format(
-                    "RowFields {0}'s declaring row type {0} must be a subclass of Row!", fieldsType.Name, this.rowType.Name));
+                    "RowFields {0}'s declaring row type {1} must be a subclass of Row!", fieldsType.Name, this.rowType.Name));
 
             var constructor = this.rowType.GetConstructor(Type.EmptyTypes);
             if (constructor != null)
@@ -183,6 +185,19 @@ namespace Serenity.Data
             this.localTextPrefix = this.RowIdentifier;
         }
 
+        private void DetermineTableHint()
+        {
+            this.tableHint = this.rowType.GetCustomAttribute<TableHintAttribute>()?.Hint;
+
+            if (!string.IsNullOrEmpty(tableHint) && !(SqlConnections.TryGetConnectionString(connectionKey)?.Dialect is SqlServer2000Dialect))
+                throw new InvalidProgramException(String.Format("Row type {0} has a [TableHint] attribute but its SQL dialect (ConnectionKey) isn't SQL Server!", rowType.Name));
+        }
+
+        private string DetermineForeignTableHint(string foreignTableName)
+        {
+            return RowRegistry.rowTypes.FirstOrDefault(rowType => rowType.GetCustomAttribute<TableNameAttribute>()?.Name == foreignTableName)?.GetCustomAttribute<TableHintAttribute>()?.Hint;
+        }
+
         private void GetRowFieldsAndProperties(
             out Dictionary<string, FieldInfo> rowFields,
             out Dictionary<string, IPropertyInfo> rowProperties)
@@ -203,7 +218,7 @@ namespace Serenity.Data
                     var pi = member as PropertyInfo;
                     if (pi != null)
                     {
-                        rowProperties[pi.Name] = annotationType != null ? 
+                        rowProperties[pi.Name] = annotationType != null ?
                             annotationType.GetAnnotatedProperty(pi) : new WrappedProperty(pi);
                     }
                 }
@@ -263,8 +278,8 @@ namespace Serenity.Data
                         PermissionAttributeBase insertPermission;
                         PermissionAttributeBase updatePermission;
 
-                        FieldFlags addFlags = (FieldFlags)0;
-                        FieldFlags removeFlags = (FieldFlags)0;
+                        FieldFlags addFlags = 0;
+                        FieldFlags removeFlags = 0;
 
                         OriginPropertyDictionary propertyDictionary = null;
 
@@ -390,7 +405,7 @@ namespace Serenity.Data
                             if (display != null)
                                 field.Caption = new LocalText(display.DisplayName);
 
-                            if ((int)addFlags != 0 || (int)removeFlags != 0)
+                            if (addFlags != 0 || removeFlags != 0)
                                 field.Flags = (field.Flags ^ removeFlags) | addFlags;
 
                             if (column != null && String.Compare(column.Name, field.Name, StringComparison.OrdinalIgnoreCase) != 0)
@@ -437,14 +452,22 @@ namespace Serenity.Data
 
                         if (leftJoin != null)
                         {
-                            field.ForeignJoinAlias = new LeftJoin(this.joins, field.ForeignTable, leftJoin.Alias,
-                                new Criteria(leftJoin.Alias, field.ForeignField) == new Criteria(field));
+                            field.ForeignJoinAlias = new LeftJoin(
+                                this.joins,
+                                field.ForeignTable,
+                                leftJoin.Alias,
+                                new Criteria(leftJoin.Alias, field.ForeignField) == new Criteria(field),
+                                DetermineForeignTableHint(field.ForeignTable));
                         }
 
                         if (innerJoin != null)
                         {
-                            field.ForeignJoinAlias = new InnerJoin(this.joins, field.ForeignTable, innerJoin.Alias,
-                                new Criteria(innerJoin.Alias, field.ForeignField) == new Criteria(field));
+                            field.ForeignJoinAlias = new InnerJoin(
+                                this.joins,
+                                field.ForeignTable,
+                                innerJoin.Alias,
+                                new Criteria(innerJoin.Alias, field.ForeignField) == new Criteria(field),
+                                DetermineForeignTableHint(field.ForeignTable));
                         }
 
                         if (textualField != null)
@@ -491,13 +514,19 @@ namespace Serenity.Data
 
                             foreach (var attr in property.GetAttributes<LeftJoinAttribute>())
                                 if (attr.ToTable != null && attr.OnCriteria != null)
-                                    new LeftJoin(this.joins, attr.ToTable, attr.Alias,
-                                        new Criteria(attr.Alias, attr.OnCriteria) == new Criteria(field));
+                                    new LeftJoin(this.joins,
+                                        attr.ToTable,
+                                        attr.Alias,
+                                        new Criteria(attr.Alias, attr.OnCriteria) == new Criteria(field),
+                                        DetermineForeignTableHint(attr.ToTable));
 
                             foreach (var attr in property.GetAttributes<InnerJoinAttribute>())
                                 if (attr.ToTable != null && attr.OnCriteria != null)
-                                    new InnerJoin(this.joins, attr.ToTable, attr.Alias,
-                                        new Criteria(attr.Alias, attr.OnCriteria) == new Criteria(field));
+                                    new InnerJoin(this.joins,
+                                        attr.ToTable,
+                                        attr.Alias,
+                                        new Criteria(attr.Alias, attr.OnCriteria) == new Criteria(field),
+                                        DetermineForeignTableHint(attr.ToTable));
 
                             field.PropertyName = property.Name;
                             this.byPropertyName[field.PropertyName] = field;
@@ -508,10 +537,18 @@ namespace Serenity.Data
                 }
 
                 foreach (var attr in rowCustomAttributes.OfType<LeftJoinAttribute>())
-                    new LeftJoin(this.joins, attr.ToTable, attr.Alias, new Criteria(attr.OnCriteria));
+                    new LeftJoin(this.joins,
+                        attr.ToTable,
+                        attr.Alias,
+                        new Criteria(attr.OnCriteria),
+                        DetermineForeignTableHint(attr.ToTable));
 
                 foreach (var attr in rowCustomAttributes.OfType<InnerJoinAttribute>())
-                    new InnerJoin(this.joins, attr.ToTable, attr.Alias, new Criteria(attr.OnCriteria));
+                    new InnerJoin(this.joins,
+                        attr.ToTable,
+                        attr.Alias,
+                        new Criteria(attr.OnCriteria),
+                        DetermineForeignTableHint(attr.ToTable));
 
                 foreach (var attr in rowCustomAttributes.OfType<OuterApplyAttribute>())
                     new OuterApply(this.joins, attr.InnerQuery, attr.Alias);
@@ -578,7 +615,7 @@ namespace Serenity.Data
             else
             {
                 byAttribute = new Dictionary<Type, Field[]>(byAttribute);
-                byAttribute[attrType] = fieldList; 
+                byAttribute[attrType] = fieldList;
             }
 
             this.byAttribute = byAttribute;
@@ -586,7 +623,7 @@ namespace Serenity.Data
         }
 
         private static TAttr GetFieldAttr<TAttr>(Field x)
-            where TAttr: Attribute
+            where TAttr : Attribute
         {
             return x.CustomAttributes.FirstOrDefault(z => typeof(TAttr).IsAssignableFrom(z.GetType())) as TAttr;
         }
@@ -891,7 +928,7 @@ namespace Serenity.Data
         {
             get { return alias; }
         }
-        
+
         string IAlias.NameDot
         {
             get { return aliasDot; }
@@ -900,6 +937,11 @@ namespace Serenity.Data
         string IAlias.Table
         {
             get { return tableName; }
+        }
+
+        string IAlias.TableHint
+        {
+            get { return tableHint; }
         }
 
         public string AliasName

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Serenity.Extensibility;
 using System;
-using Serenity.Extensibility;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Serenity.Data
@@ -11,10 +11,12 @@ namespace Serenity.Data
 
         private static ILookup<string, Row> emptyRegistry = new List<Row>().ToLookup(x => (string)null);
         internal static IDictionary<string, ILookup<string, Row>> registry;
+        internal static List<Type> rowTypes = ExtensibilityHelper.SelfAssemblies.SelectMany(a => a.GetTypes()).Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Row))).ToList();
 
         static RowRegistry()
         {
-            SchemaChangeSource.Observers += (connectionKey, table) => {
+            SchemaChangeSource.Observers += (connectionKey, table) =>
+            {
                 registry = null;
             };
         }
@@ -59,7 +61,7 @@ namespace Serenity.Data
         private static IDictionary<string, ILookup<string, Row>> Initialize()
         {
             var rows = new List<Row>();
-            
+
             foreach (var assembly in ExtensibilityHelper.SelfAssemblies)
                 foreach (var type in assembly.GetTypes())
                     if (!type.IsAbstract &&

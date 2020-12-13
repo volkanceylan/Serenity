@@ -18,13 +18,19 @@
                 sb.Append(join.Name);
             }
 
+            // join table hint: add if specified
+            if (!string.IsNullOrEmpty(join.TableHint))
+            {
+                sb.Append($" {SqlKeywords.With} ({join.TableHint})");
+            }
+
             if (!ReferenceEquals(null, join.OnCriteria) &&
                 !join.OnCriteria.IsEmpty)
             {
                 sb.Append(" ON ");
                 if (!(join.OnCriteria is BinaryCriteria))
                     sb.Append('(');
-                
+
                 if (modifySelf)
                     sb.Append(join.OnCriteria.ToString(this));
                 else
